@@ -1,0 +1,41 @@
+```{r}
+knitr::opts_chunk$set(echo = TRUE, fig.width=8, fig.height=4)
+options(scipen = 0, digits = 3)
+if(!require('pacman')) {
+  install.packages('pacman')
+}
+pacman::p_load(dplyr, ggplot2, tm, SnowballC, RColorBrewer, wordcloud, glmnet, randomForest, ranger, data.table) 
+```
+
+```{r}
+happiness <- fread("data/WorldHappiness.csv", header=T, stringsAsFactors = F)
+```
+
+```{r}
+summary(happiness)
+happiness_agg <- happiness %>%
+  select(-family, -social_support, -dystopia_residual)
+```
+
+```{r}
+Y <- happiness_agg[, 2]
+X <- model.matrix(happiness_score ~ ., data=happiness_agg)[, -2]
+
+X_matrix <- as.matrix(X)
+Y_matrix <- as.matrix(Y)
+
+fit1 <- lm(happiness_score ~., happiness) # Multiple Linear Regression
+fit2 <- glmnet(X_matrix, Y_matrix, alpha=1) # LASSO
+fit3 <- glm(happiness_score ~., happiness, family = binomial(logit)) # Logistic Regression
+
+optimal_lambda <- fit2$lambda.min
+
+plot(fit2)
+
+summary(fit2)
+
+car::Anova(fit1)
+car::Anova(fit2)
+
+happiness$continent <- as.factor(happiness$Continent)
+```

@@ -1,0 +1,67 @@
+---
+title: "EDA1"
+author:
+- Your Name 
+date: 'July 28, 2023'
+output:
+  html_document:
+    code_folding: show
+    highlight: haddock
+    number_sections: yes
+    theme: lumen
+    toc: yes
+    toc_depth: 4
+    toc_float: yes
+  pdf_document:
+    number_sections: yes
+    toc: yes
+    toc_depth: '4'
+  word_document:
+    toc: yes
+    toc_depth: '4'
+urlcolor: blue
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+if(!require('pacman')) {install.packages('pacman')}
+pacman::p_load(ISLR, readxl, tidyverse, tm, magrittr, dplyr, data.table, ggplot2, ggrepel)
+```
+
+Import the data
+
+```{r cars}
+hap_data <- fread("data/WorldHappiness.csv", header = T, stringsAsFactors = F)
+```
+
+EDA
+
+```{r pressure, echo=FALSE}
+hap_data
+hap_data <- rename(hap_data, country = Country, year = Year)
+hap_data$country
+hap_data %>%
+  group_by(country) %>%
+  summarize(sum = n())
+
+unique(hap_data%>%
+  group_by(continent, country) %>%
+  summarize(country = country))
+
+hap_data2 <- hap_data %>%
+  group_by(country) %>%
+  reframe(mean_happiness_score = mean(happiness_score), gdp_per_capita = mean(gdp_per_capita)) %>%
+  arrange(desc(mean_happiness_score))
+
+hap_data2
+
+ggplot(hap_data2, aes(x = gdp_per_capita, y = mean_happiness_score, color = mean_happiness_score)) +
+  geom_point(color = "grey") +
+  geom_text_repel(data = subset(hap_data2, country %in% c("China")), aes(label = country), color = "red", size = 4, fontface = "bold") +
+  geom_point(data = subset(hap_data2, country == "China"), aes(x = gdp_per_capita, y = mean_happiness_score), color = "red")
+  
+```
+
+
+
+
